@@ -1,6 +1,7 @@
 # 📊 Relatório Jira
 
 Aplicação Web desenvolvida em Python para geração de relatórios do Jira, permitindo consultar cards por projeto, card pai e status, exportar os resultados e enviá-los automaticamente por e-mail.
+<img width="1388" height="849" alt="image" src="https://github.com/user-attachments/assets/fc1e10cd-9da7-42b6-a22b-5a94ce53fa77" />
 
 ---
 
