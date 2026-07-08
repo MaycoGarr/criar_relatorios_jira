@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+ultimo_relatorio.txt
+preview_email.html
+*.eml
+data/credentials.json
+data/email_connections.json
+data/email_logs.json
+data/filter_presets.json

@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório Jira</title>
+  <link rel="stylesheet" href="/static/macos.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="mac-desktop">
+    <div class="mac-window">
+      <header class="window-titlebar">
+        <div class="traffic-lights" aria-hidden="true">
+          <span class="red"></span>
+          <span class="yellow"></span>
+          <span class="green"></span>
+        </div>
+        <div class="window-title" id="windowTitle">Relatório Jira</div>
+      </header>
+
+      <div class="window-toolbar">
+        <div class="toolbar-badges">
+          <span class="badge" id="connectionBadge">Jira não testado</span>
+          <span class="badge" id="summaryBadge">Sem relatório</span>
+        </div>
+      </div>
+
+      <div class="window-content">
+        <aside class="sidebar">
+          <div class="sidebar-inner">
+            <div class="sidebar-panel">
+              <div class="sidebar-zone">
+                <h2 class="sidebar-zone-label">Origem</h2>
+                <div class="field field-compact">
+                  <label for="credentialSelect">Jira</label>
+                  <div class="field-row-control">
+                    <select id="credentialSelect"></select>
+                    <button class="btn-icon-only" type="button" id="btnManageCredentials" title="Gerenciar conexões" aria-label="Gerenciar conexões Jira">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="field field-compact">
+                  <label for="filterPresetSelect">Cliente</label>
+                  <div class="field-row-control">
+                    <select id="filterPresetSelect"></select>
+                    <button class="btn-icon-only" type="button" id="btnManageFilters" title="Gerenciar filtros" aria-label="Gerenciar filtros">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="field field-compact">
+                  <label for="devResponsavel">Dev. responsável</label>
+                  <select id="devResponsavel">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="field field-compact field-last">
+                  <label for="reportMode" title="Use 'Somente impeditivos' para e-mails de alerta">Modo do relatório</label>
+                  <select id="reportMode">
+                    <option value="full" selected>Relatório completo</option>
+                    <option value="impeditive_only">Somente impeditivos</option>
+                  </select>
+                </div>
+                <div class="home-hidden" hidden aria-hidden="true">
+                  <input id="spaceName" value="4AT - Geral" />
+                  <select id="projectKey"></select>
+                  <select id="parentKey"></select>
+                  <div class="status-grid" id="statusGrid"></div>
+                </div>
+              </div>
+
+              <div class="sidebar-zone-divider"></div>
+
+              <div class="sidebar-zone">
+                <h2 class="sidebar-zone-label">Envio</h2>
+                <div class="field field-compact">
+                  <label for="emailConnectionSelect">SMTP</label>
+                  <div class="field-row-control">
+                    <select id="emailConnectionSelect"></select>
+                    <button class="btn-icon-only" type="button" id="btnManageEmail" title="Gerenciar conexões de e-mail" aria-label="Gerenciar conexões SMTP">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="field field-compact field-last">
+                  <label for="emailRecipients">Destinatários</label>
+                  <input id="emailRecipients" placeholder="email1@empresa.com, email2@empresa.com" />
+                  <div class="hint">Vazio = padrão da conexão</div>
+                </div>
+              </div>
+
+              <div class="sidebar-zone-divider"></div>
+
+              <div class="sidebar-zone sidebar-zone-extra">
+                <h2 class="sidebar-zone-label">Conteúdo extra</h2>
+                <label class="status-item toggle-item toggle-compact">
+                  <input type="checkbox" id="includeHighlights" />
+                  <span>Destaques da semana</span>
+                </label>
+                <div id="highlightsFields" class="conditional-block hidden">
+                  <div class="field field-compact">
+                    <label for="destaquePositivo">Positivo</label>
+                    <textarea id="destaquePositivo" rows="2" placeholder="Ex.: Entrega da homologação"></textarea>
+                  </div>
+                  <div class="field field-compact">
+                    <label for="destaqueNegativo">Negativo</label>
+                    <textarea id="destaqueNegativo" rows="2" placeholder="Ex.: Reunião cancelada"></textarea>
+                  </div>
+                </div>
+                <label class="status-item toggle-item toggle-compact">
+                  <input type="checkbox" id="includeAttention" />
+                  <span>Pontos de atenção</span>
+                </label>
+                <div id="attentionFields" class="conditional-block hidden">
+                  <div class="field field-compact field-last">
+                    <label for="pontosAtencao">Lista de pontos</label>
+                    <textarea id="pontosAtencao" rows="3" placeholder="Um ponto por linha"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-footer">
+            <button class="btn-primary btn-block" type="button" id="btnGenerate">
+              <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></span>
+              Gerar relatório
+            </button>
+            <button class="btn-outline-blue btn-block" type="button" id="btnSendEmail">
+              <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg></span>
+              Enviar por e-mail
+            </button>
+          </div>
+        </aside>
+
+        <main class="main-stage">
+          <div class="stage-header stage-header-actions-only">
+            <div class="stage-actions">
+              <button class="btn-icon-only hidden" id="btnCopy" type="button" title="Copiar texto" aria-label="Copiar texto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <button class="btn-icon-only hidden" id="btnDownloadReportImage" type="button" title="Baixar Report como imagem" aria-label="Baixar Report como imagem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <div class="view-toggle">
+              <button class="active" data-view="report" id="btnViewReport">Report</button>
+              <button data-view="text" id="btnViewText">Markdown</button>
+              <button data-view="whatsapp" id="btnViewWhatsapp">WhatsApp</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-canvas">
+            <div class="empty-state" id="previewEmptyState">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+              <p>Gere um relatório para visualizar</p>
+            </div>
+            <textarea id="reportOutput" class="text-view" readonly></textarea>
+            <div id="reportOutputHtml" class="text-view markdown-view" aria-live="polite"></div>
+            <pre id="reportOutputWhatsapp" class="text-view whatsapp-view hidden"></pre>
+            <iframe id="reportOutputEmail" class="text-view" title="Pré-visualização do e-mail"></iframe>
+            <iframe id="reportOutputReport" class="text-view" title="Pré-visualização do Report"></iframe>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="credentialsModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Conexões Jira</h2>
+        <button class="btn-secondary btn-small" id="btnCloseModal" type="button">Fechar</button>
+      </div>
+      <div class="modal-split">
+        <aside class="modal-sidebar">
+          <button class="modal-new-btn" id="btnNewCredential" type="button">+ Nova conexão</button>
+          <div class="modal-list" id="credentialsList"></div>
+        </aside>
+        <main class="modal-main">
+          <div class="modal-main-header">
+            <h3 id="credentialFormTitle">Nova conexão</h3>
+          </div>
+          <form id="credentialForm" class="modal-form">
+            <input type="hidden" id="credentialFormId" />
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Identificação</div>
+              <div class="field">
+                <label for="credentialName">Nome da conexão</label>
+                <input id="credentialName" placeholder="Ex.: Produção Atlassian" required />
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Autenticação</div>
+              <div class="field">
+                <label for="credentialBaseUrl">URL do Jira</label>
+                <input id="credentialBaseUrl" placeholder="https://empresa.atlassian.net" required />
+              </div>
+              <div class="field">
+                <label for="credentialEmail">E-mail Atlassian</label>
+                <input id="credentialEmail" type="email" placeholder="seu-email@empresa.com" required />
+              </div>
+              <div class="field">
+                <label for="credentialToken">Token API</label>
+                <input id="credentialToken" type="password" placeholder="Token de API" />
+                <div class="hint" id="credentialTokenHint">Obrigatório ao criar. Ao editar, deixe em branco para manter o token atual.</div>
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Preferências</div>
+              <label class="default-toggle-card" for="credentialIsDefault">
+                <input type="checkbox" id="credentialIsDefault" class="default-toggle-input" />
+                <span class="default-toggle-switch" aria-hidden="true"></span>
+                <span class="default-toggle-copy">
+                  <span class="default-toggle-title">Conexão padrão</span>
+                  <span class="default-toggle-hint">Selecionar automaticamente ao abrir o relatório</span>
+                </span>
+              </label>
+              <div class="modal-form-toolbar">
+                <span class="modal-status" id="credentialTestStatus"></span>
+                <button class="btn-ghost btn-small" type="button" id="btnTestCredentialModal">Testar conexão</button>
+              </div>
+            </div>
+
+            <div class="modal-form-actions modal-form-actions-split">
+              <div class="modal-form-actions-left" id="credentialInlineActions"></div>
+              <div class="modal-form-actions-right">
+                <button class="btn-secondary" type="button" id="btnResetCredentialForm">Limpar</button>
+                <button class="btn-primary" type="submit" id="btnSaveCredential">Salvar</button>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="emailModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Conexões de e-mail</h2>
+        <button class="btn-secondary btn-small" id="btnCloseEmailModal" type="button">Fechar</button>
+      </div>
+      <div class="modal-split">
+        <aside class="modal-sidebar">
+          <button class="modal-new-btn" id="btnNewEmailConnection" type="button">+ Nova conexão SMTP</button>
+          <div class="modal-list" id="emailConnectionsList"></div>
+        </aside>
+        <main class="modal-main">
+          <div class="modal-main-header">
+            <h3 id="emailFormTitle">Nova conexão SMTP</h3>
+          </div>
+          <form id="emailForm" class="modal-form">
+            <input type="hidden" id="emailFormId" />
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Identificação</div>
+              <div class="field">
+                <label for="emailConnName">Nome da conexão</label>
+                <input id="emailConnName" placeholder="Ex.: Office 365 Quality" required />
+              </div>
+              <div class="field">
+                <label for="emailConnFrom">E-mail remetente</label>
+                <input id="emailConnFrom" type="email" placeholder="processosautomatizados@quality.com.br" required />
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Servidor</div>
+              <div class="field-row host-port">
+                <div class="field">
+                  <label for="emailConnHost">SMTP</label>
+                  <input id="emailConnHost" value="smtp.office365.com" required />
+                </div>
+                <div class="field field-narrow">
+                  <label for="emailConnPort">Porta</label>
+                  <input id="emailConnPort" type="number" value="587" required />
+                </div>
+              </div>
+              <label class="status-item toggle-item">
+                <input type="checkbox" id="emailConnUseTls" checked />
+                <span>Usar TLS (STARTTLS)</span>
+              </label>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Credenciais</div>
+              <div class="field">
+                <label for="emailConnUsername">Usuário SMTP</label>
+                <input id="emailConnUsername" placeholder="Mesmo e-mail remetente, se vazio" />
+              </div>
+              <div class="field">
+                <label for="emailConnPassword">Senha</label>
+                <input id="emailConnPassword" type="password" placeholder="Senha ou senha de app" />
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Destinatários</div>
+              <div class="field">
+                <label for="emailConnRecipients">Destinatários padrão</label>
+                <input id="emailConnRecipients" placeholder="destino1@empresa.com, destino2@empresa.com" />
+              </div>
+              <div class="modal-form-toolbar">
+                <span class="modal-status" id="emailTestStatus"></span>
+                <button class="btn-ghost btn-small" type="button" id="btnTestEmailModal">Testar envio</button>
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Avançado</div>
+              <div class="field">
+                <label for="emailConnWebhook">Webhook URL (fase 2)</label>
+                <input id="emailConnWebhook" placeholder="https://... Power Automate / n8n" />
+                <div class="hint">Opcional. Reservado para integração futura.</div>
+              </div>
+              <label class="default-toggle-card" for="emailConnIsDefault">
+                <input type="checkbox" id="emailConnIsDefault" class="default-toggle-input" />
+                <span class="default-toggle-switch" aria-hidden="true"></span>
+                <span class="default-toggle-copy">
+                  <span class="default-toggle-title">Conexão padrão</span>
+                  <span class="default-toggle-hint">Selecionar automaticamente ao enviar e-mails</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="modal-form-actions modal-form-actions-split">
+              <div class="modal-form-actions-left" id="emailInlineActions"></div>
+              <div class="modal-form-actions-right">
+                <button class="btn-secondary" type="button" id="btnResetEmailForm">Limpar</button>
+                <button class="btn-primary" type="submit" id="btnSaveEmailConnection">Salvar</button>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="filtersModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Filtros salvos</h2>
+        <button class="btn-secondary btn-small" id="btnCloseFiltersModal" type="button">Fechar</button>
+      </div>
+      <div class="modal-split">
+        <aside class="modal-sidebar">
+          <button class="modal-new-btn" id="btnNewFilterPreset" type="button">+ Novo filtro</button>
+          <div class="modal-list" id="filterPresetsList"></div>
+        </aside>
+        <main class="modal-main">
+          <div class="modal-main-header">
+            <h3 id="filterFormTitle">Novo filtro</h3>
+          </div>
+          <form id="filterForm" class="modal-form">
+            <input type="hidden" id="filterFormId" />
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Cliente</div>
+              <div class="field">
+                <label for="filterPresetName">Nome do filtro</label>
+                <input id="filterPresetName" placeholder="Ex.: UISA, BRACELL, CORURIPE" required />
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Hierarquia Jira</div>
+              <div class="field">
+                <label for="filterSpaceName">Espaço / Projeto</label>
+                <input id="filterSpaceName" required />
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="filterProjectKey">Chave do projeto</label>
+                  <input id="filterProjectKey" required />
+                </div>
+                <div class="field">
+                  <label for="filterParentKey">Card pai</label>
+                  <input id="filterParentKey" placeholder="GERAL4AT-17" required />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-form-section">
+              <div class="modal-form-section-label">Relatório</div>
+              <div class="subgroup-label">Etapas incluídas</div>
+              <div class="status-grid" id="filterStatusGrid"></div>
+              <label class="default-toggle-card" for="filterIsDefault">
+                <input type="checkbox" id="filterIsDefault" class="default-toggle-input" />
+                <span class="default-toggle-switch" aria-hidden="true"></span>
+                <span class="default-toggle-copy">
+                  <span class="default-toggle-title">Filtro padrão</span>
+                  <span class="default-toggle-hint">Carregar automaticamente ao abrir o relatório</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="modal-form-actions modal-form-actions-split">
+              <div class="modal-form-actions-left">
+                <button class="btn-danger" type="button" id="btnDeleteFilterPreset" disabled>Excluir</button>
+              </div>
+              <div class="modal-form-actions-right">
+                <button class="btn-secondary" type="button" id="btnResetFilterForm">Limpar</button>
+                <button class="btn-primary" type="submit" id="btnSaveFilterPreset">Salvar</button>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="sendEmailModal">
+    <div class="modal modal-compact">
+      <div class="modal-header">
+        <h2>Enviar relatório por e-mail</h2>
+        <button class="btn-secondary btn-small" id="btnCloseSendEmailModal" type="button">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="emailView">Layout do e-mail</label>
+          <select id="emailView">
+            <option value="report" selected>Report</option>
+          </select>
+          <div class="hint">Envio temporariamente fixo em Report.</div>
+        </div>
+        <div class="send-email-summary" id="sendEmailSummary"></div>
+        <div class="modal-form-actions">
+          <button class="btn-primary" id="btnConfirmSendEmail" type="button">Enviar agora</button>
+          <button class="btn-secondary" id="btnCancelSendEmail" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_STATUSES = [
+      "MAPEAMENTO",
+      "PRONTO PARA DESENVOLVER",
+      "DESENVOLVIMENTO",
+      "TESTES INTERNOS",
+      "HOMOLOGAÇÃO",
+      "ITENS CONCLUÍDOS",
+    ];
+
+    let currentView = "report";
+    let lastReport = null;
+    let credentials = [];
+    let emailConnections = [];
+    let filterPresets = [];
+    let editingCredentialId = null;
+    let editingEmailConnectionId = null;
+    let editingFilterPresetId = null;
+    let activeCredentialListId = null;
+    let activeEmailListId = null;
+    let activeFilterListId = null;
+    let currentStatuses = [...DEFAULT_STATUSES];
+
+    const els = {
+      windowTitle: document.getElementById("windowTitle"),
+      filterPresetSelect: document.getElementById("filterPresetSelect"),
+      includeHighlights: document.getElementById("includeHighlights"),
+      includeAttention: document.getElementById("includeAttention"),
+      highlightsFields: document.getElementById("highlightsFields"),
+      attentionFields: document.getElementById("attentionFields"),
+      sendEmailModal: document.getElementById("sendEmailModal"),
+      sendEmailSummary: document.getElementById("sendEmailSummary"),
+      filtersModal: document.getElementById("filtersModal"),
+      filterPresetsList: document.getElementById("filterPresetsList"),
+      filterForm: document.getElementById("filterForm"),
+      filterFormId: document.getElementById("filterFormId"),
+      filterFormTitle: document.getElementById("filterFormTitle"),
+      filterPresetName: document.getElementById("filterPresetName"),
+      filterSpaceName: document.getElementById("filterSpaceName"),
+      filterProjectKey: document.getElementById("filterProjectKey"),
+      filterParentKey: document.getElementById("filterParentKey"),
+      filterStatusGrid: document.getElementById("filterStatusGrid"),
+      filterIsDefault: document.getElementById("filterIsDefault"),
+      btnCopy: document.getElementById("btnCopy"),
+      btnDownloadReportImage: document.getElementById("btnDownloadReportImage"),
+      previewEmptyState: document.getElementById("previewEmptyState"),
+      credentialTestStatus: document.getElementById("credentialTestStatus"),
+      emailTestStatus: document.getElementById("emailTestStatus"),
+      credentialSelect: document.getElementById("credentialSelect"),
+      emailConnectionSelect: document.getElementById("emailConnectionSelect"),
+      emailRecipients: document.getElementById("emailRecipients"),
+      reportMode: document.getElementById("reportMode"),
+      destaquePositivo: document.getElementById("destaquePositivo"),
+      destaqueNegativo: document.getElementById("destaqueNegativo"),
+      pontosAtencao: document.getElementById("pontosAtencao"),
+      emailView: document.getElementById("emailView"),
+      spaceName: document.getElementById("spaceName"),
+      projectKey: document.getElementById("projectKey"),
+      parentKey: document.getElementById("parentKey"),
+      devResponsavel: document.getElementById("devResponsavel"),
+      statusGrid: document.getElementById("statusGrid"),
+      reportOutput: document.getElementById("reportOutput"),
+      reportOutputHtml: document.getElementById("reportOutputHtml"),
+      reportOutputWhatsapp: document.getElementById("reportOutputWhatsapp"),
+      reportOutputEmail: document.getElementById("reportOutputEmail"),
+      reportOutputReport: document.getElementById("reportOutputReport"),
+      connectionBadge: document.getElementById("connectionBadge"),
+      summaryBadge: document.getElementById("summaryBadge"),
+      credentialsModal: document.getElementById("credentialsModal"),
+      credentialsList: document.getElementById("credentialsList"),
+      credentialForm: document.getElementById("credentialForm"),
+      credentialFormId: document.getElementById("credentialFormId"),
+      credentialFormTitle: document.getElementById("credentialFormTitle"),
+      credentialName: document.getElementById("credentialName"),
+      credentialBaseUrl: document.getElementById("credentialBaseUrl"),
+      credentialEmail: document.getElementById("credentialEmail"),
+      credentialToken: document.getElementById("credentialToken"),
+      credentialIsDefault: document.getElementById("credentialIsDefault"),
+      emailModal: document.getElementById("emailModal"),
+      emailConnectionsList: document.getElementById("emailConnectionsList"),
+      emailForm: document.getElementById("emailForm"),
+      emailFormId: document.getElementById("emailFormId"),
+      emailFormTitle: document.getElementById("emailFormTitle"),
+      emailConnName: document.getElementById("emailConnName"),
+      emailConnFrom: document.getElementById("emailConnFrom"),
+      emailConnHost: document.getElementById("emailConnHost"),
+      emailConnPort: document.getElementById("emailConnPort"),
+      emailConnUseTls: document.getElementById("emailConnUseTls"),
+      emailConnUsername: document.getElementById("emailConnUsername"),
+      emailConnPassword: document.getElementById("emailConnPassword"),
+      emailConnRecipients: document.getElementById("emailConnRecipients"),
+      emailConnWebhook: document.getElementById("emailConnWebhook"),
+      emailConnIsDefault: document.getElementById("emailConnIsDefault"),
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function setBadge(element, text, type = "") {
+      element.textContent = text;
+      element.className = `badge ${type}`.trim();
+    }
+
+    function selectedCredentialId() {
+      return els.credentialSelect.value || null;
+    }
+
+    function selectedEmailConnectionId() {
+      return els.emailConnectionSelect.value || null;
+    }
+
+    function parseRecipients(value) {
+      return value.split(/[,;]/).map((item) => item.trim()).filter(Boolean);
+    }
+
+    function selectedClientLabel() {
+      const preset = filterPresets.find((item) => item.id === els.filterPresetSelect.value);
+      return preset?.name || null;
+    }
+
+    function selectedParentLabel() {
+      const option = els.parentKey.selectedOptions[0];
+      if (option?.textContent?.includes(" — ")) {
+        const parts = option.textContent.split(" — ");
+        return parts.length > 1 ? parts.slice(1).join(" — ") : null;
+      }
+      return selectedClientLabel();
+    }
+
+    function basePayload() {
+      return {
+        credential_id: selectedCredentialId(),
+        project_key: els.projectKey.value.trim() || "GERAL4AT",
+      };
+    }
+
+    function parseAttentionPoints(value) {
+      return String(value || "")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+    }
+
+    function reportPayload() {
+      const statuses = selectedStatusesFromGrid();
+      const recipients = parseRecipients(els.emailRecipients.value);
+      const positive = els.includeHighlights.checked ? els.destaquePositivo.value.trim() : "";
+      const negative = els.includeHighlights.checked ? els.destaqueNegativo.value.trim() : "";
+      const attentionPoints = els.includeAttention.checked
+        ? parseAttentionPoints(els.pontosAtencao.value)
+        : [];
+
+      return {
+        ...basePayload(),
+        email_connection_id: selectedEmailConnectionId(),
+        space_name: els.spaceName.value.trim(),
+        parent_key: els.parentKey.value.trim(),
+        parent_label: selectedParentLabel(),
+        client_label: selectedClientLabel(),
+        dev_filter: els.devResponsavel.value || null,
+        statuses,
+        mode: els.reportMode.value,
+        recipients: recipients.length ? recipients : undefined,
+        weekly_highlights: positive || negative ? { positive, negative } : undefined,
+        attention_points: attentionPoints.length ? attentionPoints : undefined,
+        email_view: els.emailView.value,
+      };
+    }
+
+    function currentFilterFormValues() {
+      return {
+        name: els.filterPresetName.value.trim(),
+        space_name: els.filterSpaceName.value.trim(),
+        project_key: els.filterProjectKey.value.trim(),
+        parent_key: els.filterParentKey.value.trim(),
+        report_mode: els.reportMode.value,
+        statuses: selectedStatusesFromGrid(".filter-status-checkbox"),
+        is_default: els.filterIsDefault.checked,
+      };
+    }
+
+    function applyPresetToForm(preset) {
+      if (!preset) return;
+      els.spaceName.value = preset.space_name || "";
+      els.reportMode.value = preset.report_mode || "full";
+      currentStatuses = [...(preset.statuses || DEFAULT_STATUSES)];
+      fillProjectSelect(
+        [{ key: preset.project_key, name: preset.space_name || preset.project_key }],
+        preset.project_key
+      );
+      fillParentSelect(
+        [{ key: preset.parent_key, summary: preset.name, label: `${preset.parent_key} — ${preset.name}` }],
+        preset.parent_key
+      );
+      renderStatusCheckboxes(currentStatuses, currentStatuses);
+      updateClientTitle();
+    }
+
+    async function loadFilterPresets(selectId = null) {
+      const data = await requestJson("/api/filter-presets");
+      filterPresets = data.presets || [];
+
+      if (!filterPresets.length) {
+        els.filterPresetSelect.innerHTML = `<option value="">Cadastre um filtro</option>`;
+        return;
+      }
+
+      const options = filterPresets.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }));
+      const defaultPreset = filterPresets.find((item) => item.is_default) || filterPresets[0];
+      fillSelect(els.filterPresetSelect, options, selectId || defaultPreset.id, "value", "label");
+    }
+
+    function renderFilterPresetsList() {
+      if (!filterPresets.length) {
+        els.filterPresetsList.innerHTML = `<div class="modal-empty">Nenhum filtro salvo.</div>`;
+        return;
+      }
+
+      els.filterPresetsList.innerHTML = filterPresets.map((item) => `
+        <button
+          type="button"
+          class="modal-list-item ${item.id === activeFilterListId ? "active" : ""} ${item.is_default ? "is-default" : ""}"
+          data-filter-id="${item.id}"
+        >
+          <span class="modal-list-title">${escapeHtml(item.name)}</span>
+          <span class="modal-list-meta">${escapeHtml(item.parent_key)} • ${escapeHtml(item.project_key)}</span>
+        </button>
+      `).join("");
+    }
+
+    function resetFilterForm() {
+      editingFilterPresetId = null;
+      activeFilterListId = null;
+      els.filterFormId.value = "";
+      els.filterFormTitle.textContent = "Novo filtro";
+      els.filterForm.reset();
+      renderStatusCheckboxes(DEFAULT_STATUSES, DEFAULT_STATUSES, els.filterStatusGrid, "filter-status-checkbox");
+      document.getElementById("btnDeleteFilterPreset").disabled = true;
+      renderFilterPresetsList();
+    }
+
+    function startNewFilterFromSidebar() {
+      resetFilterForm();
+      els.filterPresetName.value = selectedParentLabel() || "";
+      els.filterSpaceName.value = els.spaceName.value.trim();
+      els.filterProjectKey.value = els.projectKey.value.trim();
+      els.filterParentKey.value = els.parentKey.value.trim();
+      renderStatusCheckboxes(
+        DEFAULT_STATUSES,
+        selectedStatusesFromGrid(),
+        els.filterStatusGrid,
+        "filter-status-checkbox"
+      );
+    }
+
+    function openFiltersModal() {
+      renderFilterPresetsList();
+      if (!editingFilterPresetId) {
+        const currentPreset = filterPresets.find((item) => item.id === els.filterPresetSelect.value);
+        if (currentPreset) editFilterPreset(currentPreset.id);
+        else resetFilterForm();
+      }
+      els.filtersModal.classList.add("open");
+    }
+
+    function closeFiltersModal() {
+      els.filtersModal.classList.remove("open");
+    }
+
+    function fillFilterForm(preset) {
+      editingFilterPresetId = preset.id;
+      activeFilterListId = preset.id;
+      els.filterFormId.value = preset.id;
+      els.filterFormTitle.textContent = `Editar — ${preset.name}`;
+      els.filterPresetName.value = preset.name || "";
+      els.filterSpaceName.value = preset.space_name || "";
+      els.filterProjectKey.value = preset.project_key || "";
+      els.filterParentKey.value = preset.parent_key || "";
+      els.filterIsDefault.checked = Boolean(preset.is_default);
+      renderStatusCheckboxes(
+        preset.statuses || DEFAULT_STATUSES,
+        preset.statuses || DEFAULT_STATUSES,
+        els.filterStatusGrid,
+        "filter-status-checkbox"
+      );
+      document.getElementById("btnDeleteFilterPreset").disabled = false;
+      renderFilterPresetsList();
+    }
+
+    function editFilterPreset(presetId) {
+      const preset = filterPresets.find((item) => item.id === presetId);
+      if (preset) fillFilterForm(preset);
+    }
+
+    async function saveFilterPreset(event) {
+      event.preventDefault();
+      const payload = currentFilterFormValues();
+      if (!payload.name) {
+        alert("Informe um nome para o filtro.");
+        return;
+      }
+
+      let saved;
+      if (editingFilterPresetId) {
+        saved = await requestJson(`/api/filter-presets/${editingFilterPresetId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        saved = await requestJson("/api/filter-presets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      await loadFilterPresets(saved.id);
+      applyPresetToForm(saved);
+      fillFilterForm(saved);
+      if (selectedCredentialId()) await loadFilterOptions(saved.parent_key);
+      setBadge(els.connectionBadge, "Filtro salvo", "ok");
+    }
+
+    async function deleteFilterPreset() {
+      if (!editingFilterPresetId) return;
+      const preset = filterPresets.find((item) => item.id === editingFilterPresetId);
+      if (!preset) return;
+      if (!confirm(`Excluir o filtro "${preset.name}"?`)) return;
+
+      await requestJson(`/api/filter-presets/${editingFilterPresetId}`, { method: "DELETE" });
+      await loadFilterPresets();
+      const active = filterPresets.find((item) => item.id === els.filterPresetSelect.value);
+      if (active) applyPresetToForm(active);
+      resetFilterForm();
+    }
+
+    function emailViewLabel(view) {
+      return view === "report" ? "Report" : "Report";
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Falha na requisição");
+      }
+      return data;
+    }
+
+    async function postJson(url, payload) {
+      return requestJson(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    function updateClientTitle() {
+      const label = selectedClientLabel() || "Pré-visualização";
+      document.title = `Relatório Jira — ${label}`;
+    }
+
+    function setModalStatus(element, text, type = "") {
+      if (!element) return;
+      element.textContent = text;
+      element.className = `modal-status ${type}`.trim();
+    }
+
+    function toggleConditionalFields() {
+      els.highlightsFields.classList.toggle("hidden", !els.includeHighlights.checked);
+      els.attentionFields.classList.toggle("hidden", !els.includeAttention.checked);
+    }
+
+    function updateEmptyState() {
+      const hasReport = Boolean(lastReport);
+      els.previewEmptyState.classList.toggle("hidden", hasReport);
+    }
+
+    function selectedStatusesFromGrid(selector = ".status-checkbox") {
+      const checked = [...document.querySelectorAll(`${selector}:checked`)].map((input) => input.value);
+      if (selector === ".status-checkbox" && !checked.length && currentStatuses.length) {
+        return [...currentStatuses];
+      }
+      return checked;
+    }
+
+    function renderStatusCheckboxes(statuses, selectedStatuses = null, container = els.statusGrid, inputClass = "status-checkbox") {
+      const selected = new Set(selectedStatuses || statuses);
+      container.innerHTML = statuses.map((status) => `
+        <label class="status-item">
+          <input class="${inputClass}" type="checkbox" value="${escapeHtml(status)}" ${selected.has(status) ? "checked" : ""} />
+          <span>${escapeHtml(status)}</span>
+        </label>
+      `).join("");
+    }
+
+    function fillSelect(select, options, selectedValue = "", valueKey = "value", labelKey = "label") {
+      const current = selectedValue || select.value;
+      select.innerHTML = "";
+      options.forEach((option) => {
+        const item = document.createElement("option");
+        if (typeof option === "string") {
+          item.value = option;
+          item.textContent = option;
+        } else {
+          item.value = option[valueKey];
+          item.textContent = option[labelKey];
+        }
+        select.appendChild(item);
+      });
+      if (current) select.value = current;
+    }
+
+    function fillProjectSelect(projects, selectedValue = "") {
+      const options = projects.map((project) => ({
+        value: project.key,
+        label: `${project.key} — ${project.name}`,
+      }));
+      fillSelect(els.projectKey, options, selectedValue, "value", "label");
+    }
+
+    function fillParentSelect(parentCards, selectedValue = "") {
+      if (!parentCards.length) {
+        els.parentKey.innerHTML = `<option value="">Nenhum card pai encontrado</option>`;
+        return;
+      }
+      fillSelect(
+        els.parentKey,
+        parentCards.map((card) => ({ value: card.key, label: card.label })),
+        selectedValue,
+        "value",
+        "label"
+      );
+    }
+
+    function fillDevSelect(people, selectedValue = "") {
+      const options = [{ value: "", label: "Todos" }].concat(
+        (people || []).map((name) => ({ value: name, label: name }))
+      );
+      fillSelect(els.devResponsavel, options, selectedValue, "value", "label");
+    }
+
+    function fillFieldSelect(select, fields, selectedValue) {
+      const current = selectedValue !== undefined ? selectedValue : select.value;
+      select.innerHTML = `<option value="">Detectar automaticamente</option>`;
+      fields.forEach((field) => {
+        const item = document.createElement("option");
+        item.value = field.id;
+        item.textContent = field.name;
+        select.appendChild(item);
+      });
+      select.value = current || "";
+    }
+
+    async function loadCredentials(selectId = null) {
+      const data = await requestJson("/api/credentials");
+      credentials = data.credentials || [];
+
+      if (!credentials.length) {
+        els.credentialSelect.innerHTML = `<option value="">Cadastre uma conexão</option>`;
+        return;
+      }
+
+      const options = credentials.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }));
+
+      const defaultCredential = credentials.find((item) => item.is_default) || credentials[0];
+      fillSelect(els.credentialSelect, options, selectId || defaultCredential.id, "value", "label");
+    }
+
+    async function loadEmailConnections(selectId = null) {
+      const data = await requestJson("/api/email-connections");
+      emailConnections = data.connections || [];
+
+      if (!emailConnections.length) {
+        els.emailConnectionSelect.innerHTML = `<option value="">Cadastre uma conexão SMTP</option>`;
+        return;
+      }
+
+      const options = emailConnections.map((item) => ({
+        value: item.id,
+        label: item.name,
+      }));
+      const defaultConnection = emailConnections.find((item) => item.is_default) || emailConnections[0];
+      fillSelect(els.emailConnectionSelect, options, selectId || defaultConnection.id, "value", "label");
+
+      const active = emailConnections.find((item) => item.id === els.emailConnectionSelect.value);
+      if (active?.default_recipients?.length && !els.emailRecipients.value) {
+        els.emailRecipients.value = active.default_recipients.join(", ");
+      }
+    }
+
+    async function loadFilterOptions(preferredParentKey = "") {
+      if (!selectedCredentialId()) {
+        renderStatusCheckboxes(DEFAULT_STATUSES);
+        return;
+      }
+
+      try {
+        const data = await postJson("/api/filter-options", {
+          ...basePayload(),
+          preferred_parent_key: preferredParentKey || els.parentKey.value,
+        });
+        const currentProject = els.projectKey.value || "GERAL4AT";
+        fillProjectSelect(data.projects || [], currentProject);
+        fillParentSelect(data.parent_cards || [], preferredParentKey || els.parentKey.value);
+        fillDevSelect(data.board_people || [], "");
+        renderStatusCheckboxes(
+          data.default_statuses || DEFAULT_STATUSES,
+          currentStatuses.length ? currentStatuses : (data.default_statuses || DEFAULT_STATUSES)
+        );
+        updateClientTitle();
+        setBadge(els.connectionBadge, "Filtros atualizados", "ok");
+      } catch (error) {
+        setBadge(els.connectionBadge, error.message, "error");
+      }
+    }
+
+    async function loadDefaults() {
+      const defaults = await requestJson("/api/defaults");
+      await loadFilterPresets(defaults.filter_preset?.id || null);
+
+      const preset = defaults.filter_preset || filterPresets.find((item) => item.is_default) || filterPresets[0];
+      if (preset) {
+        applyPresetToForm(preset);
+        els.reportMode.value = preset.report_mode || defaults.report_mode || "full";
+      } else {
+        els.spaceName.value = defaults.space_name || "";
+        currentStatuses = [...(defaults.statuses || DEFAULT_STATUSES)];
+        renderStatusCheckboxes(currentStatuses, currentStatuses);
+        els.reportMode.value = defaults.report_mode || "full";
+      }
+
+      await loadCredentials(defaults.credential?.id || null);
+      await loadEmailConnections(defaults.email_connection?.id || null);
+
+      if (!preset) {
+        fillProjectSelect(
+          [{ key: defaults.project_key || "GERAL4AT", name: defaults.space_name || "4AT - Geral" }],
+          defaults.project_key || "GERAL4AT"
+        );
+        fillParentSelect(
+          [{ key: defaults.parent_key || "GERAL4AT-17", summary: "UISA", label: "GERAL4AT-17 — UISA" }],
+          defaults.parent_key || "GERAL4AT-17"
+        );
+      }
+
+      updateClientTitle();
+
+      if (selectedCredentialId()) {
+        await loadFilterOptions(preset?.parent_key || defaults.parent_key || "GERAL4AT-17");
+      }
+    }
+
+    async function testCredentialFromModal() {
+      const credentialId = editingCredentialId;
+      if (!credentialId) {
+        setModalStatus(els.credentialTestStatus, "Salve a conexão antes de testar", "error");
+        return;
+      }
+      try {
+        await postJson("/api/test-connection", { credential_id: credentialId });
+        setModalStatus(els.credentialTestStatus, "Conectado", "ok");
+        setBadge(els.connectionBadge, "Conectado", "ok");
+        await loadFilterOptions();
+      } catch (error) {
+        setModalStatus(els.credentialTestStatus, error.message, "error");
+        setBadge(els.connectionBadge, error.message, "error");
+      }
+    }
+
+    async function testEmailFromModal() {
+      const connectionId = editingEmailConnectionId;
+      if (!connectionId) {
+        setModalStatus(els.emailTestStatus, "Salve a conexão antes de testar", "error");
+        return;
+      }
+      const recipients = parseRecipients(els.emailConnRecipients.value);
+      if (!recipients.length) {
+        setModalStatus(els.emailTestStatus, "Informe destinatários no formulário", "error");
+        return;
+      }
+      try {
+        await postJson(`/api/email-connections/${connectionId}/test`, { recipients });
+        setModalStatus(els.emailTestStatus, "E-mail de teste enviado", "ok");
+        setBadge(els.summaryBadge, "Teste enviado", "ok");
+      } catch (error) {
+        setModalStatus(els.emailTestStatus, error.message, "error");
+        setBadge(els.summaryBadge, error.message, "error");
+      }
+    }
+
+    function renderCredentialsList() {
+      if (!credentials.length) {
+        els.credentialsList.innerHTML = `<div class="modal-empty">Nenhuma conexão cadastrada.</div>`;
+        return;
+      }
+
+      els.credentialsList.innerHTML = credentials.map((item) => `
+        <button
+          type="button"
+          class="modal-list-item ${item.id === activeCredentialListId ? "active" : ""} ${item.is_default ? "is-default" : ""}"
+          data-credential-id="${item.id}"
+        >
+          <span class="modal-list-title">${escapeHtml(item.name)}</span>
+          <span class="modal-list-meta">${escapeHtml(item.base_url)}</span>
+          <span class="modal-list-meta">${escapeHtml(item.email)}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderCredentialActions(item) {
+      return `
+        ${item.is_default ? "" : `<button class="btn-secondary btn-small" type="button" data-action="default" data-id="${item.id}">Tornar padrão</button>`}
+        <button class="btn-danger btn-small" type="button" data-action="delete" data-id="${item.id}">Excluir</button>
+      `;
+    }
+
+    function resetCredentialForm() {
+      editingCredentialId = null;
+      activeCredentialListId = null;
+      els.credentialFormId.value = "";
+      els.credentialFormTitle.textContent = "Nova conexão";
+      els.credentialForm.reset();
+      els.credentialToken.required = true;
+      els.credentialToken.placeholder = "Token de API";
+      setModalStatus(els.credentialTestStatus, "", "");
+      const actionsHost = document.getElementById("credentialInlineActions");
+      if (actionsHost) actionsHost.innerHTML = "";
+      renderCredentialsList();
+    }
+
+    function openCredentialsModal() {
+      renderCredentialsList();
+      resetCredentialForm();
+      els.credentialsModal.classList.add("open");
+    }
+
+    function closeCredentialsModal() {
+      els.credentialsModal.classList.remove("open");
+      resetCredentialForm();
+    }
+
+    async function saveCredential(event) {
+      event.preventDefault();
+
+      const payload = {
+        name: els.credentialName.value.trim(),
+        base_url: els.credentialBaseUrl.value.trim(),
+        email: els.credentialEmail.value.trim(),
+        is_default: els.credentialIsDefault.checked,
+      };
+
+      const token = els.credentialToken.value.trim();
+      if (token) payload.api_token = token;
+
+      if (!editingCredentialId && !token) {
+        alert("Informe o token da API para criar a conexão.");
+        return;
+      }
+
+      let saved;
+      if (editingCredentialId) {
+        saved = await requestJson(`/api/credentials/${editingCredentialId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        saved = await requestJson("/api/credentials", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      await loadCredentials(saved.id);
+      await editCredential(saved.id);
+      await loadFilterOptions();
+      setBadge(els.connectionBadge, "Conexão salva", "ok");
+    }
+
+    async function editCredential(credentialId) {
+      const item = await requestJson(`/api/credentials/${credentialId}`);
+      editingCredentialId = credentialId;
+      activeCredentialListId = credentialId;
+      els.credentialFormId.value = credentialId;
+      els.credentialFormTitle.textContent = `Editar — ${item.name}`;
+      els.credentialName.value = item.name || "";
+      els.credentialBaseUrl.value = item.base_url || "";
+      els.credentialEmail.value = item.email || "";
+      els.credentialToken.value = item.api_token || "";
+      els.credentialToken.required = false;
+      els.credentialToken.placeholder = "Deixe em branco para manter o token atual";
+      els.credentialIsDefault.checked = Boolean(item.is_default);
+      setModalStatus(els.credentialTestStatus, "", "");
+      renderCredentialsList();
+      const actionsHost = document.getElementById("credentialInlineActions");
+      if (actionsHost) actionsHost.innerHTML = renderCredentialActions(item);
+    }
+
+    async function deleteCredential(credentialId) {
+      const item = credentials.find((credential) => credential.id === credentialId);
+      if (!item) return;
+      if (!confirm(`Excluir a conexão "${item.name}"?`)) return;
+
+      await requestJson(`/api/credentials/${credentialId}`, { method: "DELETE" });
+      await loadCredentials();
+      renderCredentialsList();
+      resetCredentialForm();
+      await loadFilterOptions();
+    }
+
+    async function makeDefaultCredential(credentialId) {
+      await postJson(`/api/credentials/${credentialId}/set-default`, {});
+      await loadCredentials(credentialId);
+      await editCredential(credentialId);
+      await loadFilterOptions();
+    }
+
+    function renderMarkdownReport(markdown) {
+      if (!markdown) {
+        els.reportOutputHtml.innerHTML = "";
+        return;
+      }
+      if (window.marked) {
+        els.reportOutputHtml.innerHTML = marked.parse(markdown, { breaks: true, gfm: true });
+      } else {
+        els.reportOutputHtml.textContent = markdown;
+      }
+    }
+
+    function renderWhatsappReport(text) {
+      els.reportOutputWhatsapp.textContent = text || "";
+    }
+
+    function applyViewMode() {
+      const showText = currentView === "text";
+      const showWhatsapp = currentView === "whatsapp";
+      const showReport = currentView === "report";
+      const hasReport = Boolean(lastReport);
+      els.reportOutput.classList.toggle("hidden", !showText || !hasReport);
+      els.reportOutputHtml.classList.toggle("hidden", !showText || !hasReport);
+      els.reportOutputWhatsapp.classList.toggle("hidden", !showWhatsapp || !hasReport);
+      els.reportOutputEmail.classList.remove("active");
+      els.reportOutputEmail.classList.add("hidden");
+      els.reportOutputReport.classList.toggle("active", showReport && hasReport);
+      els.reportOutputReport.classList.toggle("hidden", !showReport || !hasReport);
+      const canCopy = hasReport && (showText || showWhatsapp);
+      const canDownloadImage = hasReport && showReport;
+      els.btnCopy.classList.toggle("hidden", !canCopy);
+      els.btnDownloadReportImage.classList.toggle("hidden", !canDownloadImage);
+      updateEmptyState();
+      document.querySelectorAll(".view-toggle button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === currentView);
+      });
+    }
+
+    async function generateReport() {
+      if (!selectedCredentialId()) {
+        setBadge(els.summaryBadge, "Selecione uma conexão Jira", "error");
+        return;
+      }
+
+      document.body.classList.add("loading");
+      try {
+        const data = await postJson("/api/report", reportPayload());
+        lastReport = data;
+        els.reportOutput.value = data.text || "";
+        renderMarkdownReport(data.text || "");
+        renderWhatsappReport(data.whatsapp_text || "");
+        els.reportOutputEmail.srcdoc = data.email_html || "";
+        els.reportOutputReport.srcdoc = data.report_html || "";
+        setBadge(
+          els.summaryBadge,
+          `${data.total_cards} card(s) | (🚨 ${data.impeditive_count} com impeditivo)`,
+          data.impeditive_count > 0 ? "warn" : "ok"
+        );
+        applyViewMode();
+      } catch (error) {
+        setBadge(els.summaryBadge, error.message, "error");
+      } finally {
+        document.body.classList.remove("loading");
+      }
+    }
+
+    async function copyReport() {
+      let content = "";
+      if (currentView === "text") content = els.reportOutput.value;
+      else if (currentView === "whatsapp") content = els.reportOutputWhatsapp.textContent;
+      if (!content) return;
+      await navigator.clipboard.writeText(content);
+      setBadge(els.summaryBadge, "Conteúdo copiado", "ok");
+    }
+
+    function sanitizeFilenamePart(value) {
+      return String(value || "report")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\-]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 48) || "report";
+    }
+
+    async function downloadReportImage() {
+      if (!lastReport?.report_html) {
+        setBadge(els.summaryBadge, "Gere o relatório primeiro", "error");
+        return;
+      }
+      if (!window.html2canvas) {
+        setBadge(els.summaryBadge, "Biblioteca de imagem indisponível", "error");
+        return;
+      }
+
+      const iframe = els.reportOutputReport;
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc?.body) {
+        setBadge(els.summaryBadge, "Pré-visualização do Report indisponível", "error");
+        return;
+      }
+
+      document.body.classList.add("loading");
+      try {
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const target = doc.body;
+        const canvas = await window.html2canvas(target, {
+          backgroundColor: "#f2f2f7",
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          width: target.scrollWidth,
+          height: target.scrollHeight,
+          windowWidth: target.scrollWidth,
+          windowHeight: target.scrollHeight,
+        });
+
+        const link = document.createElement("a");
+        const label = sanitizeFilenamePart(selectedParentLabel() || lastReport.parent_label);
+        const stamp = (lastReport.generated_at || "").replace(/[^\d]/g, "").slice(0, 12) || new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        link.download = `status-report-${label}-${stamp}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        setBadge(els.summaryBadge, "Imagem do Report baixada", "ok");
+      } catch (error) {
+        setBadge(els.summaryBadge, error.message || "Falha ao gerar imagem", "error");
+      } finally {
+        document.body.classList.remove("loading");
+      }
+    }
+
+    function openSendEmailModal() {
+      if (!selectedEmailConnectionId()) {
+        setBadge(els.summaryBadge, "Cadastre uma conexão SMTP", "error");
+        return;
+      }
+      const recipients = parseRecipients(els.emailRecipients.value);
+      const active = emailConnections.find((item) => item.id === els.emailConnectionSelect.value);
+      const finalRecipients = recipients.length
+        ? recipients
+        : (active?.default_recipients || []);
+      els.sendEmailSummary.innerHTML = `
+        <div class="summary-row"><strong>Cliente:</strong> ${escapeHtml(selectedParentLabel() || "—")}</div>
+        <div class="summary-row"><strong>SMTP:</strong> ${escapeHtml(active?.name || "—")}</div>
+        <div class="summary-row"><strong>Destinatários:</strong> ${escapeHtml(finalRecipients.join(", ") || "Nenhum informado")}</div>
+      `;
+      els.sendEmailModal.classList.add("open");
+    }
+
+    function closeSendEmailModal() {
+      els.sendEmailModal.classList.remove("open");
+    }
+
+    async function sendReportEmail() {
+      if (!selectedEmailConnectionId()) {
+        setBadge(els.summaryBadge, "Cadastre uma conexão SMTP", "error");
+        return;
+      }
+
+      document.body.classList.add("loading");
+      try {
+        const data = await postJson("/api/report/send-email", {
+          ...reportPayload(),
+          skip_if_empty: true,
+        });
+        if (data.skipped) {
+          setBadge(els.summaryBadge, data.message || "Nenhum impeditivo para enviar", "warn");
+          if (data.report) {
+            lastReport = data.report;
+            els.reportOutput.value = data.report.text || "";
+            renderMarkdownReport(data.report.text || "");
+            renderWhatsappReport(data.report.whatsapp_text || "");
+            els.reportOutputEmail.srcdoc = data.report.email_html || "";
+            els.reportOutputReport.srcdoc = data.report.report_html || "";
+          }
+          return;
+        }
+        lastReport = data.report || lastReport;
+        const sentCount = data.sent_count || 1;
+        const layout = emailViewLabel(data.email_view || els.emailView.value);
+        const message = sentCount > 1
+          ? `${sentCount} e-mails enviados (${layout}) para ${data.recipients?.join(", ")}`
+          : `E-mail (${layout}) enviado para ${data.recipients?.join(", ")}`;
+        setBadge(els.summaryBadge, message, "ok");
+        closeSendEmailModal();
+      } catch (error) {
+        setBadge(els.summaryBadge, error.message, "error");
+      } finally {
+        document.body.classList.remove("loading");
+      }
+    }
+
+    function renderEmailConnectionsList() {
+      if (!emailConnections.length) {
+        els.emailConnectionsList.innerHTML = `<div class="modal-empty">Nenhuma conexão SMTP cadastrada.</div>`;
+        return;
+      }
+
+      els.emailConnectionsList.innerHTML = emailConnections.map((item) => `
+        <button
+          type="button"
+          class="modal-list-item ${item.id === activeEmailListId ? "active" : ""} ${item.is_default ? "is-default" : ""}"
+          data-email-id="${item.id}"
+        >
+          <span class="modal-list-title">${escapeHtml(item.name)}</span>
+          <span class="modal-list-meta">${escapeHtml(item.from_email)}</span>
+          <span class="modal-list-meta">${escapeHtml(item.smtp_host)}:${item.smtp_port}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderEmailInlineActions(item) {
+      return `
+        ${item.is_default ? "" : `<button class="btn-secondary btn-small" type="button" data-email-action="default" data-id="${item.id}">Tornar padrão</button>`}
+        <button class="btn-danger btn-small" type="button" data-email-action="delete" data-id="${item.id}">Excluir</button>
+      `;
+    }
+
+    function resetEmailForm() {
+      editingEmailConnectionId = null;
+      activeEmailListId = null;
+      els.emailFormId.value = "";
+      els.emailFormTitle.textContent = "Nova conexão SMTP";
+      els.emailForm.reset();
+      els.emailConnHost.value = "smtp.office365.com";
+      els.emailConnPort.value = "587";
+      els.emailConnUseTls.checked = true;
+      els.emailConnPassword.required = true;
+      setModalStatus(els.emailTestStatus, "", "");
+      const actionsHost = document.getElementById("emailInlineActions");
+      if (actionsHost) actionsHost.innerHTML = "";
+      renderEmailConnectionsList();
+    }
+
+    function openEmailModal() {
+      renderEmailConnectionsList();
+      resetEmailForm();
+      els.emailModal.classList.add("open");
+    }
+
+    function closeEmailModal() {
+      els.emailModal.classList.remove("open");
+      resetEmailForm();
+    }
+
+    async function saveEmailConnection(event) {
+      event.preventDefault();
+      const payload = {
+        name: els.emailConnName.value.trim(),
+        from_email: els.emailConnFrom.value.trim(),
+        smtp_host: els.emailConnHost.value.trim(),
+        smtp_port: Number(els.emailConnPort.value || 587),
+        use_tls: els.emailConnUseTls.checked,
+        username: els.emailConnUsername.value.trim(),
+        default_recipients: parseRecipients(els.emailConnRecipients.value),
+        webhook_url: els.emailConnWebhook.value.trim(),
+        is_default: els.emailConnIsDefault.checked,
+      };
+      const password = els.emailConnPassword.value.trim();
+      if (password) payload.password = password;
+      if (!editingEmailConnectionId && !password) {
+        alert("Informe a senha SMTP para criar a conexão.");
+        return;
+      }
+
+      let saved;
+      if (editingEmailConnectionId) {
+        saved = await requestJson(`/api/email-connections/${editingEmailConnectionId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        saved = await requestJson("/api/email-connections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      await loadEmailConnections(saved.id);
+      await editEmailConnection(saved.id);
+      setBadge(els.summaryBadge, "Conexão SMTP salva", "ok");
+    }
+
+    async function editEmailConnection(connectionId) {
+      const item = await requestJson(`/api/email-connections/${connectionId}`);
+      editingEmailConnectionId = connectionId;
+      activeEmailListId = connectionId;
+      els.emailFormId.value = connectionId;
+      els.emailFormTitle.textContent = `Editar — ${item.name}`;
+      els.emailConnName.value = item.name || "";
+      els.emailConnFrom.value = item.from_email || "";
+      els.emailConnHost.value = item.smtp_host || "smtp.office365.com";
+      els.emailConnPort.value = item.smtp_port || 587;
+      els.emailConnUseTls.checked = Boolean(item.use_tls);
+      els.emailConnUsername.value = item.username || "";
+      els.emailConnPassword.value = item.password || "";
+      els.emailConnPassword.required = false;
+      els.emailConnRecipients.value = (item.default_recipients || []).join(", ");
+      els.emailConnWebhook.value = item.webhook_url || "";
+      els.emailConnIsDefault.checked = Boolean(item.is_default);
+      setModalStatus(els.emailTestStatus, "", "");
+      renderEmailConnectionsList();
+      const actionsHost = document.getElementById("emailInlineActions");
+      if (actionsHost) actionsHost.innerHTML = renderEmailInlineActions(item);
+    }
+
+    async function deleteEmailConnection(connectionId) {
+      const item = emailConnections.find((connection) => connection.id === connectionId);
+      if (!item) return;
+      if (!confirm(`Excluir a conexão "${item.name}"?`)) return;
+      await requestJson(`/api/email-connections/${connectionId}`, { method: "DELETE" });
+      await loadEmailConnections();
+      renderEmailConnectionsList();
+      resetEmailForm();
+    }
+
+    async function makeDefaultEmailConnection(connectionId) {
+      await postJson(`/api/email-connections/${connectionId}/set-default`, {});
+      await loadEmailConnections(connectionId);
+      await editEmailConnection(connectionId);
+    }
+
+    document.getElementById("btnTestCredentialModal").addEventListener("click", testCredentialFromModal);
+    document.getElementById("btnManageCredentials").addEventListener("click", openCredentialsModal);
+    document.getElementById("btnNewCredential").addEventListener("click", resetCredentialForm);
+    document.getElementById("btnCloseModal").addEventListener("click", closeCredentialsModal);
+    document.getElementById("btnResetCredentialForm").addEventListener("click", resetCredentialForm);
+    document.getElementById("btnGenerate").addEventListener("click", generateReport);
+    document.getElementById("btnSendEmail").addEventListener("click", openSendEmailModal);
+    document.getElementById("btnConfirmSendEmail").addEventListener("click", sendReportEmail);
+    document.getElementById("btnCancelSendEmail").addEventListener("click", closeSendEmailModal);
+    document.getElementById("btnCloseSendEmailModal").addEventListener("click", closeSendEmailModal);
+    els.btnCopy.addEventListener("click", copyReport);
+    els.btnDownloadReportImage.addEventListener("click", downloadReportImage);
+    document.getElementById("btnTestEmailModal").addEventListener("click", testEmailFromModal);
+    document.getElementById("btnManageEmail").addEventListener("click", openEmailModal);
+    document.getElementById("btnNewEmailConnection").addEventListener("click", resetEmailForm);
+    document.getElementById("btnCloseEmailModal").addEventListener("click", closeEmailModal);
+    document.getElementById("btnResetEmailForm").addEventListener("click", resetEmailForm);
+    document.getElementById("btnManageFilters").addEventListener("click", openFiltersModal);
+    document.getElementById("btnNewFilterPreset").addEventListener("click", startNewFilterFromSidebar);
+    document.getElementById("btnCloseFiltersModal").addEventListener("click", closeFiltersModal);
+    document.getElementById("btnResetFilterForm").addEventListener("click", resetFilterForm);
+    document.getElementById("btnDeleteFilterPreset").addEventListener("click", deleteFilterPreset);
+    els.includeHighlights.addEventListener("change", toggleConditionalFields);
+    els.includeAttention.addEventListener("change", toggleConditionalFields);
+    els.emailForm.addEventListener("submit", saveEmailConnection);
+    els.credentialForm.addEventListener("submit", saveCredential);
+    els.filterForm.addEventListener("submit", saveFilterPreset);
+
+    els.filterPresetSelect.addEventListener("change", async () => {
+      const preset = filterPresets.find((item) => item.id === els.filterPresetSelect.value);
+      if (!preset) return;
+      applyPresetToForm(preset);
+      if (selectedCredentialId()) await loadFilterOptions(preset.parent_key);
+    });
+
+    els.credentialSelect.addEventListener("change", () => loadFilterOptions());
+    els.emailConnectionSelect.addEventListener("change", async () => {
+      const active = emailConnections.find((item) => item.id === els.emailConnectionSelect.value);
+      if (active?.default_recipients?.length) {
+        els.emailRecipients.value = active.default_recipients.join(", ");
+      }
+    });
+
+    els.emailConnectionsList.addEventListener("click", async (event) => {
+      const listItem = event.target.closest("[data-email-id]");
+      if (listItem) {
+        await editEmailConnection(listItem.dataset.emailId);
+        return;
+      }
+      const button = event.target.closest("button[data-email-action]");
+      if (!button) return;
+      const connectionId = button.dataset.id;
+      if (button.dataset.emailAction === "delete") await deleteEmailConnection(connectionId);
+      if (button.dataset.emailAction === "default") await makeDefaultEmailConnection(connectionId);
+    });
+
+    els.emailModal.addEventListener("click", (event) => {
+      if (event.target === els.emailModal) closeEmailModal();
+    });
+
+    els.sendEmailModal.addEventListener("click", (event) => {
+      if (event.target === els.sendEmailModal) closeSendEmailModal();
+    });
+
+    els.filtersModal.addEventListener("click", (event) => {
+      if (event.target === els.filtersModal) closeFiltersModal();
+    });
+
+    els.filterPresetsList.addEventListener("click", (event) => {
+      const listItem = event.target.closest("[data-filter-id]");
+      if (!listItem) return;
+      editFilterPreset(listItem.dataset.filterId);
+    });
+
+    els.credentialsList.addEventListener("click", async (event) => {
+      const listItem = event.target.closest("[data-credential-id]");
+      if (listItem) {
+        await editCredential(listItem.dataset.credentialId);
+        return;
+      }
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const credentialId = button.dataset.id;
+      if (button.dataset.action === "delete") await deleteCredential(credentialId);
+      if (button.dataset.action === "default") await makeDefaultCredential(credentialId);
+    });
+
+    els.credentialForm.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const credentialId = button.dataset.id;
+      if (button.dataset.action === "delete") await deleteCredential(credentialId);
+      if (button.dataset.action === "default") await makeDefaultCredential(credentialId);
+    });
+
+    els.emailForm.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-email-action]");
+      if (!button) return;
+      const connectionId = button.dataset.id;
+      if (button.dataset.emailAction === "delete") await deleteEmailConnection(connectionId);
+      if (button.dataset.emailAction === "default") await makeDefaultEmailConnection(connectionId);
+    });
+
+    els.credentialsModal.addEventListener("click", (event) => {
+      if (event.target === els.credentialsModal) closeCredentialsModal();
+    });
+
+    document.querySelectorAll(".view-toggle button").forEach((button) => {
+      button.addEventListener("click", () => {
+        currentView = button.dataset.view;
+        applyViewMode();
+      });
+    });
+
+    loadDefaults();
+    toggleConditionalFields();
+    updateEmptyState();
+    applyViewMode();
+  </script>
+</body>
+</html>
