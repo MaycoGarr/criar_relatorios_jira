@@ -3,10 +3,8 @@
 Aplicação web local para gerar relatórios de cards do Jira, filtrar por hierarquia e etapa, e enviar por e-mail SMTP.
 
 ---
-<img width="1399" height="872" alt="image" src="https://github.com/user-attachments/assets/7078d42f-9ba4-485e-be5c-bd81a9fa37b6" />
 
 
-<img width="1890" height="2432" alt="image" src="https://github.com/user-attachments/assets/6d7ac269-c0dc-4d73-9bcd-49f6f2e5d2fd" />
 
 
 
