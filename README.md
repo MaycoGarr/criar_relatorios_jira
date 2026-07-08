@@ -1,114 +1,149 @@
-# 📊 Relatório Jira
+# Relatórios Jira — UISA
 
-Aplicação Web desenvolvida em Python para geração de relatórios do Jira, permitindo consultar cards por projeto, card pai e status, exportar os resultados e enviá-los automaticamente por e-mail.
-<img width="1388" height="849" alt="image" src="https://github.com/user-attachments/assets/fc1e10cd-9da7-42b6-a22b-5a94ce53fa77" />
+Aplicação web local para gerar relatórios de cards do Jira, filtrar por hierarquia e etapa, e enviar por e-mail SMTP.
 
 ---
 
 ## Funcionalidades
 
-- Consulta de cards via API do Jira
-- Filtros por Projeto, Card Pai e Status
-- Relatório completo ou somente impeditivos
-- Exportação em HTML e TXT
-- Envio de e-mail via SMTP
-- Gerenciamento de múltiplas conexões Jira e SMTP
-- Execução agendada via CLI
+| Recurso | Descrição |
+|---------|-----------|
+| **Relatório visual** | Cards agrupados por etapa, com desenvolvedor, impeditivo e dias sem atualização |
+| **Filtros** | Card pai, projeto, etapas e presets salvos |
+| **E-mail HTML** | Template responsivo com pré-visualização na interface |
+| **Modos de envio** | Relatório completo ou somente impeditivos |
+| **Conexões CRUD** | Múltiplas contas Jira e SMTP, com padrão configurável |
+| **Exportação** | `.txt` e `.html` |
+| **Agendamento** | Script CLI para o Agendador de Tarefas do Windows |
 
 ---
 
-## Tecnologias
+## Início rápido
 
-- Python 3.11+
-- Flask
-- Jira REST API
-- SMTP
-
----
-
-## Instalação
-
-```bash
-git clone <repositorio>
+```powershell
+# 1. Clonar e entrar na pasta
+git clone https://github.com/MaycoGarr/criar_relatorios_jira.git
 cd criar_relatorios_jira
 
+# 2. Ambiente virtual e dependências
 python -m venv .venv
-
-# Windows
 .venv\Scripts\activate
-
 pip install -r requirements.txt
 
+# 3. Variáveis de ambiente (opcional — também cadastra pela interface)
 copy .env.example .env
-```
 
----
-
-## Executando
-
-```bash
-python app.py
-```
-
-ou
-
-```bash
+# 4. Iniciar
 run.bat
 ```
 
-Acesse:
+Abra **http://127.0.0.1:5050**
+
+---
+
+## Fluxo de uso
 
 ```
-http://127.0.0.1:5050
+Conexão Jira → Filtros (card pai + etapas) → Gerar relatório → Exportar ou enviar e-mail
 ```
+
+1. Cadastre uma **conexão Jira** (URL, e-mail, token de API)
+2. Selecione o **card pai** e as **etapas** desejadas
+3. Gere o relatório e visualize nas abas **Relatório** ou **E-mail**
+4. Exporte ou envie — modo **Somente impeditivos** cancela o envio se não houver bloqueios
+
+---
+
+## O que cada card exibe
+
+- Etapa (status)
+- Nome, desenvolvedor responsável e flag impeditivo
+- Dias sem atualização e link direto no Jira
+- Última atualização relevante (comentário manual; ignora ruído de assignee/flag)
 
 ---
 
 ## Configuração
 
-As conexões são armazenadas localmente:
+### Pré-requisitos
 
-| Arquivo | Descrição |
-|----------|-----------|
-| `data/credentials.json` | Conexões Jira |
-| `data/email_connections.json` | Conexões SMTP |
-| `data/email_logs.json` | Histórico de envios |
+- Python 3.11+
+- Conta Atlassian com token de API
+- Conta SMTP (ex.: Office 365)
 
-Na primeira execução, as configurações também podem ser importadas automaticamente do arquivo `.env`.
+### Variáveis `.env`
+
+| Variável | Exemplo |
+|----------|---------|
+| `JIRA_BASE_URL` | `https://sua-empresa.atlassian.net` |
+| `JIRA_EMAIL` | `seu-email@empresa.com` |
+| `JIRA_API_TOKEN` | Token gerado em [Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens) |
+| `SMTP_HOST` | `smtp.office365.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_USERNAME` | E-mail do remetente |
+| `SMTP_PASSWORD` | Senha ou senha de app (MFA) |
+| `SMTP_FROM_EMAIL` | Remetente exibido no e-mail |
+| `SMTP_DEFAULT_RECIPIENTS` | Destinatários padrão (vírgula) |
+
+> Credenciais também podem ser cadastradas pela interface. Arquivos em `data/` **não são versionados**.
+
+### SMTP — Office 365
+
+| Campo | Valor |
+|-------|-------|
+| Host | `smtp.office365.com` |
+| Porta | `587` |
+| TLS | STARTTLS |
 
 ---
 
-## Envio Agendado
+## Envio agendado
 
-```bash
+```powershell
 .venv\Scripts\python send_report_cli.py --mode impeditive_only
 ```
 
----
-
-## Estrutura
-
-```
-app.py
-send_report_cli.py
-email_template.py
-requirements.txt
-
-data/
-templates/
-static/
-```
+Usa as conexões padrão salvas em `data/`. Logs em `data/email_logs.json`.
 
 ---
 
-## Observações
+## Estrutura do projeto
 
-- As credenciais permanecem apenas em arquivos locais.
-- Utilize SMTP com STARTTLS (porta 587) para Office 365.
-- Os arquivos da pasta `data/` não devem ser versionados.
+```
+├── app.py                 # API Flask + servidor web
+├── report_builder.py      # Lógica do relatório
+├── report_template.py     # HTML do relatório
+├── email_template.py      # HTML do e-mail
+├── jira_client.py         # Cliente Jira REST
+├── credentials_store.py   # CRUD conexões Jira
+├── email_store.py         # CRUD conexões SMTP
+├── email_sender.py        # Envio SMTP
+├── filter_store.py        # Presets de filtros
+├── send_report_cli.py     # Envio via linha de comando
+├── static/                # Interface web
+├── data/                  # Dados locais (gitignored)
+├── run.bat                # Atalho de inicialização
+└── requirements.txt
+```
+
+---
+
+## JQL gerada
+
+```jql
+project = "GERAL4AT" AND parent = GERAL4AT-17 AND status IN ("Mapeamento", "Desenvolvimento", ...)
+```
+
+---
+
+## Segurança
+
+- `.env` e `data/*.json` ficam apenas na máquina local
+- Nunca commite tokens, senhas ou credenciais
+- Contas com MFA no Office 365 podem exigir senha de app no Azure AD
 
 ---
 
 ## Licença
 
-Projeto para uso interno.
+Uso interno — Quality / UISA.
